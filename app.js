@@ -11,8 +11,13 @@ createModel('user')
 createModel('blog')
 
 var port = process.env.PORT || 3000
-app.listen(port)
-console.log('start from http://localhost:' + port)
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port)
+  console.log('start from http://localhost:' + port)
+} else {
+  module.exports = app
+}
 
 function createModel (name) {
   var model = require('./models/' + name + '.js')

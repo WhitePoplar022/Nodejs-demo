@@ -11,10 +11,11 @@
     "express": "^4.12.4"
   },
   "devDependencies": {
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "supertest": "^1.0.1"
   },
   "scripts": {
-    "test": "mocha test/**/*.js"
+    "test": "NODE_ENV=test mocha test/**/*.js"
   },
   "author": "",
   "license": "MIT"
