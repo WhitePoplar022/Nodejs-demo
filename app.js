@@ -1,6 +1,7 @@
 
 var express = require('express')
 var bodyParser = require('body-parser')
+var random = require('./lib/random')
 var app = express()
 var prefix = '/api'
 var tables = {};
@@ -23,10 +24,11 @@ function createModel (name) {
   var model = require('./models/' + name + '.js')
   var createValid = function (inputs, output) {
     return function valid (key) {
-      if (!(inputs[key] instanceof model[key]))
+      if (!(inputs[key] instanceof model[key] ||
+        typeof inputs[key] === model[key].name.toLowerCase()) && inputs[key])
         return new Error('invalid type on: ' + key)
-      else
-        output[key] = req.body[key]
+      else if (inputs[key])
+        output[key] = inputs[key]
     }
   }
   var createRespondor = function (errs, input) {
@@ -54,10 +56,12 @@ function createModel (name) {
     prefix + '/' + name + 's',
     function (req, res) {
       var data = {}
-      var errs = Object.keys(model).filter(
+      var errs = Object.keys(model).map(
         createValid(req.body, data)
+      ).filter(
+        function (item) { return !!item }
       )
-      createRespondor(errs, input)(res, 201) 
+      createRespondor(errs, data)(res, 201) 
     }
   )
   app.get(
@@ -65,7 +69,7 @@ function createModel (name) {
     function (req, res) {
       var record = tables[name][req.params.id]
       if (record)
-        res.status(200).end(record)
+        res.status(200).json(record)
       else
         res.status(204).end()
     }
@@ -88,6 +92,7 @@ function createModel (name) {
     prefix + '/' + name + 's/:id',
     function (req, res) {
       delete tables[name][req.params.id]
+      res.status(200).end()
     }
   )
 }
